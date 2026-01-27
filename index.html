@@ -3,175 +3,286 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema de Cadastros</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>Gerador de Cadastro</title>
 <style>
-body { font-family:'Segoe UI',sans-serif; margin:0; background:#f5f5f5; }
-header { background:#d50000; color:#fff; padding:15px; text-align:center; }
-.container { max-width:1100px; margin:20px auto; background:white; padding:20px; border-radius:8px; }
-.tabs { display:flex; gap:10px; margin-bottom:15px; }
-.tab { padding:8px 15px; border:2px solid #d50000; color:#d50000; cursor:pointer; border-radius:6px; }
-.tab.active { background:#d50000; color:white; }
-input, select, button, textarea { width:100%; padding:8px; margin-top:6px; }
-button { background:#d50000; color:white; border:none; cursor:pointer; }
+body { font-family:'Segoe UI',sans-serif; background:#fff; color:#222; margin:0; }
+header { background:#d50000; color:#fff; padding:1rem; text-align:center; }
+.tabs { display:flex; justify-content:center; margin-top:1rem; }
+.tab { padding:10px 20px; cursor:pointer; border:2px solid #d50000; margin:0 5px; border-radius:8px; color:#d50000; }
+.tab.active { background:#d50000; color:#fff; }
+form { max-width:900px; margin:20px auto; padding:20px; border:1px solid #ccc; border-radius:10px; }
+label { display:block; margin-top:10px; font-weight:600; }
+input, select { width:100%; padding:8px; border-radius:5px; border:1px solid #ccc; }
+button { margin-top:15px; background:#d50000; color:#fff; border:none; padding:10px 15px; border-radius:6px; cursor:pointer; }
 button:hover { background:#a30000; }
 .owner-block { background:#fff4f4; padding:10px; border-radius:8px; margin-top:10px; }
 .hidden { display:none; }
-textarea { height:220px; font-family:monospace; }
-.copy-btn { background:#333; margin-top:5px; }
-.copy-btn:hover { background:#000; }
-.top-bar { display:flex; gap:10px; align-items:center; }
-.top-bar button { width:auto; }
-.admin-box { background:#f9f9f9; padding:15px; border-radius:8px; margin-top:10px; }
+pre { background:#f4f4f4; padding:12px; border-radius:8px; white-space:pre-wrap; margin-top:15px; }
 </style>
 </head>
 <body>
 
-<header>Sistema de Cadastros</header>
+<header><h1>Gerador de Cadastro</h1></header>
 
-<!-- LOGIN -->
-<div id="loginScreen" class="container">
-  <h2>Login</h2>
-  <input id="loginEmail" placeholder="Email">
-  <input id="loginSenha" type="password" placeholder="Senha">
-  <button onclick="login()">Entrar</button>
+<div class="tabs">
+  <div class="tab active" id="tabPJ">Pessoa Jurídica</div>
+  <div class="tab" id="tabPF">Pessoa Física</div>
 </div>
 
-<!-- APP -->
-<div id="appWrapper" class="container hidden">
+<!-- ================= PJ ================= -->
+<form id="formPJ">
+<h2>Pessoa Jurídica</h2>
 
-<div class="top-bar">
-  <div class="tabs">
-    <div class="tab active" id="tabPJ">Pessoa Jurídica</div>
-    <div class="tab" id="tabPF">Pessoa Física</div>
-  </div>
-  <div style="flex:1"></div>
-  <button id="adminBtn" class="hidden" onclick="abrirAdmin()">Painel Admin</button>
-  <button onclick="logout()">Sair</button>
-</div>
+<label>Razão Social</label><input id="pj_businessName">
+<label>Nome Fantasia</label><input id="pj_tradingName">
+<label>CNPJ</label><input id="pj_documentNumber">
+<label>Email Comercial</label><input id="pj_businessEmail">
+<label>Telefone</label><input id="pj_contactNumber">
 
-<!-- ADMIN PANEL -->
-<div id="adminPanel" class="admin-box hidden">
-  <h2>Painel Admin — Criar Usuário</h2>
-  <input id="newUserName" placeholder="Nome do usuário">
-  <input id="newUserEmail" placeholder="Email">
-  <input id="newUserPassword" placeholder="Senha inicial">
-  <select id="newUserRole">
-    <option value="operador">Operador</option>
-    <option value="admin">Admin</option>
+<label>Tipo de Empresa</label>
+<select id="pj_companyType">
+  <option value="MEI">MEI</option>
+  <option value="PJ">PJ</option>
+</select>
+
+<div id="pjExtraFields" class="hidden">
+  <label>Faturamento Anual</label>
+  <select id="pj_revenue">
+    <option>R$81.001 – R$360.000</option>
+    <option>R$360.001 – R$4.800.000</option>
+    <option>R$4.800.001 – R$78.000.000</option>
+    <option>Acima de R$78.000.000</option>
   </select>
-  <button onclick="criarUsuario()">Criar Usuário</button>
-  <button onclick="fecharAdmin()">Fechar</button>
+
+  <label>Renda do Sócio</label>
+  <select id="pj_partnerIncome">
+    <option>Até R$5.000</option>
+    <option>R$5.001 – R$10.000</option>
+    <option>R$10.001 – R$30.000</option>
+    <option>R$30.001 – R$100.000</option>
+    <option>Acima de R$100.000</option>
+  </select>
 </div>
 
-<!-- PJ -->
-<div id="formPJ">
-<h2>Cadastro PJ</h2>
-<input id="pj_businessName" placeholder="Razão Social">
-<input id="pj_documentNumber" placeholder="CNPJ">
-<button onclick="generateTxtPJ()">Gerar Cadastro PJ</button>
-<textarea id="outputPJ" readonly></textarea>
-<button class="copy-btn" onclick="copiarTexto('outputPJ')">📋 Copiar Cadastro PJ</button>
-</div>
+<h3>Sócios</h3>
+<div id="ownersContainer"></div>
+<button type="button" id="addOwner">+ Adicionar Sócio</button>
 
-<!-- PF -->
-<div id="formPF" class="hidden">
-<h2>Cadastro PF</h2>
-<input id="pf_fullName" placeholder="Nome Completo">
-<input id="pf_documentNumber" placeholder="CPF">
-<input id="pf_birthDate" placeholder="DD/MM/AAAA">
-<button onclick="generateTxtPF()">Gerar Cadastro PF</button>
-<textarea id="outputPF" readonly></textarea>
-<button class="copy-btn" onclick="copiarTexto('outputPF')">📋 Copiar Cadastro PF</button>
-</div>
+<h3>Endereço Comercial</h3>
+<label>CEP</label><input id="pj_postalCode">
+<label>Rua</label><input id="pj_street">
+<label>Número</label><input id="pj_number">
+<label>Complemento</label><input id="pj_complement">
+<label>Bairro</label><input id="pj_neighborhood">
+<label>Cidade</label><input id="pj_city">
+<label>Estado</label><input id="pj_state">
 
-</div>
+<button type="button" onclick="generateTxtPJ()">Gerar Cadastro PJ</button>
+<pre id="outputPJ"></pre>
+</form>
+
+<!-- ================= PF ================= -->
+<form id="formPF" style="display:none;">
+<h2>Pessoa Física</h2>
+
+<label>Nome Completo</label><input id="pf_fullName">
+<label>CPF</label><input id="pf_documentNumber">
+<label>Email</label><input id="pf_email">
+<label>Telefone</label><input id="pf_phoneNumber">
+
+<label>Profissão</label>
+<select id="pf_profession">
+<option>Autônomo</option>
+<option>CLT</option>
+<option>Servidor Público</option>
+<option>Empresário</option>
+<option>Profissional Liberal</option>
+<option>Motorista de Aplicativo</option>
+<option>Comerciante</option>
+<option>Professor</option>
+<option>Estudante</option>
+<option>Aposentado</option>
+<option>Desempregado</option>
+<option>Outro</option>
+</select>
+
+<label>Patrimônio</label>
+<select id="pf_assets">
+<option>Até R$50.000</option>
+<option>R$50.001 a R$200.000</option>
+<option>R$200.001 a R$1.000.000</option>
+<option>R$1.000.000 a R$5.000.000</option>
+<option>Acima de R$5.000.000</option>
+</select>
+
+<h3>Endereço</h3>
+<label>CEP</label><input id="pf_postalCode">
+<label>Rua</label><input id="pf_street">
+<label>Número</label><input id="pf_number">
+<label>Complemento</label><input id="pf_complement">
+<label>Bairro</label><input id="pf_neighborhood">
+<label>Cidade</label><input id="pf_city">
+<label>Estado</label><input id="pf_state">
+
+<button type="button" onclick="generateTxtPF()">Gerar Cadastro PF</button>
+<pre id="outputPF"></pre>
+</form>
 
 <script>
-const supabaseClient = supabase.createClient("https://hrfwoawxiqeyixpgmqwn.supabase.co","sb_publishable_ad7DlGX8tj82H5pObvlhEA_-15QTlJ4");
-let perfilUsuario=null;
+document.addEventListener("DOMContentLoaded", () => {
 
-function formatarData(data){
- if(!data) return '';
- const [d,m,a]=data.split('/');
- return `${d}-${m}-${a}`;
-}
+const tabPJ = document.getElementById('tabPJ');
+const tabPF = document.getElementById('tabPF');
+const formPJ = document.getElementById('formPJ');
+const formPF = document.getElementById('formPF');
+const pj_companyType = document.getElementById('pj_companyType');
+const pjExtraFields = document.getElementById('pjExtraFields');
+const addOwner = document.getElementById('addOwner');
+const ownersContainer = document.getElementById('ownersContainer');
+const outputPJ = document.getElementById('outputPJ');
+const outputPF = document.getElementById('outputPF');
 
-async function login(){
- const { data, error } = await supabaseClient.auth.signInWithPassword({
-   email: loginEmail.value,
-   password: loginSenha.value
- });
- if(error) return alert(error.message);
+tabPJ.onclick = () => { tabPJ.classList.add('active'); tabPF.classList.remove('active'); formPJ.style.display='block'; formPF.style.display='none'; }
+tabPF.onclick = () => { tabPF.classList.add('active'); tabPJ.classList.remove('active'); formPF.style.display='block'; formPJ.style.display='none'; }
 
- const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', data.user.id).single();
- perfilUsuario = profile;
+pj_companyType.addEventListener('change', () => {
+  pjExtraFields.classList.toggle('hidden', pj_companyType.value === 'MEI');
+});
 
- loginScreen.classList.add("hidden");
- appWrapper.classList.remove("hidden");
+addOwner.onclick = () => {
+  const div = document.createElement('div');
+  div.classList.add('owner-block');
+  div.innerHTML = `
+    <label>Tipo de Sócio</label>
+    <select class="ownerType"><option>SOCIO</option><option>REPRESENTANTE</option></select>
+    <label>CPF</label><input class="ownerDocument">
+    <label>Nome Completo</label><input class="ownerName">
+    <label>Telefone</label><input class="ownerPhone">
+    <label>Email</label><input class="ownerEmail">
+    <label>Nome da Mãe</label><input class="ownerMother">
+    <label>Nome Social</label><input class="ownerSocial">
+    <label>Data de Nascimento</label><input class="ownerBirth">
+    <h4>Endereço do Sócio</h4>
+    <input placeholder="CEP" class="ownerPostal">
+    <input placeholder="Rua" class="ownerStreet">
+    <input placeholder="Número" class="ownerNumber">
+    <input placeholder="Complemento" class="ownerComplement">
+    <input placeholder="Bairro" class="ownerNeighborhood">
+    <input placeholder="Cidade" class="ownerCity">
+    <input placeholder="Estado" class="ownerState">
+    <button type="button" class="copyAddressBtn">Copiar endereço para empresa</button>
+  `;
+  ownersContainer.appendChild(div);
 
- if(perfilUsuario.role==='admin') adminBtn.classList.remove('hidden');
-}
-
-function logout(){ supabaseClient.auth.signOut(); location.reload(); }
-
-tabPJ.onclick=()=>{formPJ.classList.remove('hidden');formPF.classList.add('hidden');adminPanel.classList.add('hidden');tabPJ.classList.add('active');tabPF.classList.remove('active');}
-tabPF.onclick=()=>{formPF.classList.remove('hidden');formPJ.classList.add('hidden');adminPanel.classList.add('hidden');tabPF.classList.add('active');tabPJ.classList.remove('active');}
-
-function abrirAdmin(){
- adminPanel.classList.remove('hidden');
- formPJ.classList.add('hidden');
- formPF.classList.add('hidden');
-}
-
-function fecharAdmin(){
- adminPanel.classList.add('hidden');
- formPJ.classList.remove('hidden');
-}
-
-async function registrarAuditoria(tipo,doc){
- const { data:{user} } = await supabaseClient.auth.getUser();
- if(user){
-  await supabaseClient.from('auditoria').insert({ user_id:user.id, tipo:tipo, documento:doc });
- }
-}
-
-window.generateTxtPJ=async()=>{
- const conteudo=`PJ: ${pj_businessName.value}\nCNPJ: ${pj_documentNumber.value}`;
- outputPJ.value=conteudo;
- outputPJ.select();
- await registrarAuditoria("Cadastro PJ", pj_documentNumber.value);
+  div.querySelector('.copyAddressBtn').addEventListener('click', () => {
+    pj_postalCode.value = div.querySelector('.ownerPostal').value;
+    pj_street.value = div.querySelector('.ownerStreet').value;
+    pj_number.value = div.querySelector('.ownerNumber').value;
+    pj_complement.value = div.querySelector('.ownerComplement').value;
+    pj_neighborhood.value = div.querySelector('.ownerNeighborhood').value;
+    pj_city.value = div.querySelector('.ownerCity').value;
+    pj_state.value = div.querySelector('.ownerState').value;
+  });
 };
 
-window.generateTxtPF=async()=>{
- const conteudo=`PF: ${pf_fullName.value}\nCPF: ${pf_documentNumber.value}\nNascimento: ${formatarData(pf_birthDate.value)}`;
- outputPF.value=conteudo;
- outputPF.select();
- await registrarAuditoria("Cadastro PF", pf_documentNumber.value);
+function downloadTxt(name, content){
+  const blob = new Blob([content], { type:'text/plain' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = name;
+  link.click();
+}
+
+window.generateTxtPJ = function () {
+  const type = pj_companyType.value;
+  const revenue = type === 'MEI' ? 'Até R$81.000' : pj_revenue.value;
+  const income = type === 'MEI' ? 'Até R$5.000' : pj_partnerIncome.value;
+
+  const owners = [...document.querySelectorAll('.owner-block')].map((div, i) => `
+--- SÓCIO ${i + 1} ---
+Tipo de Sócio: ${div.querySelector('.ownerType').value}
+CPF: ${div.querySelector('.ownerDocument').value}
+Nome Completo: ${div.querySelector('.ownerName').value}
+Telefone: ${div.querySelector('.ownerPhone').value}
+Email: ${div.querySelector('.ownerEmail').value}
+Nome da Mãe: ${div.querySelector('.ownerMother').value}
+Nome Social: ${div.querySelector('.ownerSocial').value}
+Data de Nascimento: ${div.querySelector('.ownerBirth').value}
+
+Endereço do Sócio:
+CEP: ${div.querySelector('.ownerPostal').value}
+Rua: ${div.querySelector('.ownerStreet').value}
+Número: ${div.querySelector('.ownerNumber').value}
+Complemento: ${div.querySelector('.ownerComplement').value}
+Bairro: ${div.querySelector('.ownerNeighborhood').value}
+Cidade: ${div.querySelector('.ownerCity').value}
+Estado: ${div.querySelector('.ownerState').value}
+Pessoa Politicamente Exposta: NÃO
+`).join('\n');
+
+  const content = `
+===============================
+   CADASTRO PESSOA JURÍDICA
+===============================
+
+Razão Social: ${pj_businessName.value}
+Nome Fantasia: ${pj_tradingName.value}
+CNPJ: ${pj_documentNumber.value}
+Email Comercial: ${pj_businessEmail.value}
+Telefone de Contato: ${pj_contactNumber.value}
+Tipo de Empresa: ${type}
+
+Faturamento Anual: ${revenue}
+Renda do Sócio: ${income}
+
+ENDEREÇO COMERCIAL
+CEP: ${pj_postalCode.value}
+Rua: ${pj_street.value}
+Número: ${pj_number.value}
+Complemento: ${pj_complement.value}
+Bairro: ${pj_neighborhood.value}
+Cidade: ${pj_city.value}
+Estado: ${pj_state.value}
+
+SÓCIOS
+${owners}
+`;
+
+  outputPJ.textContent = content;
+  const cnpjLimpo = pj_documentNumber.value.replace(/\D/g,'');
+  downloadTxt(cnpjLimpo ? `cadastro_${cnpjLimpo}.txt` : 'cadastro_pj.txt', content);
 };
 
-function copiarTexto(id){
- const campo=document.getElementById(id);
- campo.select();
- document.execCommand("copy");
- alert("Copiado!");
-}
+window.generateTxtPF = function () {
+  const content = `
+===============================
+   CADASTRO PESSOA FÍSICA
+===============================
 
-async function criarUsuario(){
- const res = await fetch("https://hrfwoawxiqeyixpgmqwn.supabase.co/functions/v1/super-handler", {
-   method:"POST",
-   headers:{ "Content-Type":"application/json" },
-   body: JSON.stringify({
-     email:newUserEmail.value,
-     password:newUserPassword.value,
-     nome:newUserName.value,
-     role:newUserRole.value
-   })
- });
- const data=await res.json();
- if(data.error) return alert("Erro: "+data.error.message);
- alert("Usuário criado com sucesso!");
-}
+Nome Completo: ${pf_fullName.value}
+CPF: ${pf_documentNumber.value}
+Email: ${pf_email.value}
+Telefone: ${pf_phoneNumber.value}
+
+Profissão: ${pf_profession.value}
+Patrimônio: ${pf_assets.value}
+
+ENDEREÇO
+CEP: ${pf_postalCode.value}
+Rua: ${pf_street.value}
+Número: ${pf_number.value}
+Complemento: ${pf_complement.value}
+Bairro: ${pf_neighborhood.value}
+Cidade: ${pf_city.value}
+Estado: ${pf_state.value}
+`;
+
+  outputPF.textContent = content;
+  const cpfLimpo = pf_documentNumber.value.replace(/\D/g,'');
+  downloadTxt(cpfLimpo ? `cadastro_${cpfLimpo}.txt` : 'cadastro_pf.txt', content);
+};
+
+});
 </script>
 
 </body>
