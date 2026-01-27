@@ -158,7 +158,7 @@ function copiarTexto(id){
 }
 
 async function criarUsuario(){
- const res = await fetch("https://hrfwoawxiqeyixpgmqwn.supabase.co", {
+ const res = await fetch("https://hrfwoawxiqeyixpgmqwn.supabase.co/functions/v1/super-handler", {
    method:"POST",
    headers:{ "Content-Type":"application/json" },
    body: JSON.stringify({
