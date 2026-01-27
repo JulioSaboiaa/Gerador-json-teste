@@ -17,11 +17,12 @@ button { background:#d50000; color:white; border:none; cursor:pointer; }
 button:hover { background:#a30000; }
 .owner-block { background:#fff4f4; padding:10px; border-radius:8px; margin-top:10px; }
 .hidden { display:none; }
-textarea { height:260px; font-family:monospace; }
+textarea { height:220px; font-family:monospace; }
 .copy-btn { background:#333; margin-top:5px; }
 .copy-btn:hover { background:#000; }
 .top-bar { display:flex; gap:10px; align-items:center; }
 .top-bar button { width:auto; }
+.admin-box { background:#f9f9f9; padding:15px; border-radius:8px; margin-top:10px; }
 </style>
 </head>
 <body>
@@ -49,84 +50,36 @@ textarea { height:260px; font-family:monospace; }
   <button onclick="logout()">Sair</button>
 </div>
 
-<!-- ================= PJ ================= -->
-<div id="formPJ">
-<h2>Cadastro Pessoa Jurídica</h2>
-
-<input id="pj_businessName" placeholder="Razão Social">
-<input id="pj_tradingName" placeholder="Nome Fantasia">
-<input id="pj_documentNumber" placeholder="CNPJ">
-<input id="pj_businessEmail" placeholder="Email Comercial">
-<input id="pj_contactNumber" placeholder="Telefone">
-
-<select id="pj_companyType">
-<option value="MEI">MEI</option>
-<option value="PJ">PJ</option>
-</select>
-
-<div id="pjExtraFields" class="hidden">
-<select id="pj_revenue">
-<option>R$81.001 – R$360.000</option>
-<option>R$360.001 – R$4.800.000</option>
-<option>R$4.800.001 – R$78.000.000</option>
-<option>Acima de R$78.000.000</option>
-</select>
-
-<select id="pj_partnerIncome">
-<option>Até R$5.000</option>
-<option>R$5.001 – R$10.000</option>
-<option>R$10.001 – R$30.000</option>
-<option>R$30.001 – R$100.000</option>
-<option>Acima de R$100.000</option>
-</select>
+<!-- ADMIN PANEL -->
+<div id="adminPanel" class="admin-box hidden">
+  <h2>Painel Admin — Criar Usuário</h2>
+  <input id="newUserName" placeholder="Nome do usuário">
+  <input id="newUserEmail" placeholder="Email">
+  <input id="newUserPassword" placeholder="Senha inicial">
+  <select id="newUserRole">
+    <option value="operador">Operador</option>
+    <option value="admin">Admin</option>
+  </select>
+  <button onclick="criarUsuario()">Criar Usuário</button>
+  <button onclick="fecharAdmin()">Fechar</button>
 </div>
 
-<h3>Sócios</h3>
-<div id="ownersContainer"></div>
-<button type="button" id="addOwner">+ Adicionar Sócio</button>
-
-<h3>Endereço Comercial</h3>
-<input id="pj_postalCode" placeholder="CEP">
-<input id="pj_street" placeholder="Rua">
-<input id="pj_number" placeholder="Número">
-<input id="pj_complement" placeholder="Complemento">
-<input id="pj_neighborhood" placeholder="Bairro">
-<input id="pj_city" placeholder="Cidade">
-<input id="pj_state" placeholder="Estado">
-
+<!-- PJ -->
+<div id="formPJ">
+<h2>Cadastro PJ</h2>
+<input id="pj_businessName" placeholder="Razão Social">
+<input id="pj_documentNumber" placeholder="CNPJ">
 <button onclick="generateTxtPJ()">Gerar Cadastro PJ</button>
 <textarea id="outputPJ" readonly></textarea>
 <button class="copy-btn" onclick="copiarTexto('outputPJ')">📋 Copiar Cadastro PJ</button>
 </div>
 
-<!-- ================= PF ================= -->
+<!-- PF -->
 <div id="formPF" class="hidden">
-<h2>Cadastro Pessoa Física</h2>
-
+<h2>Cadastro PF</h2>
 <input id="pf_fullName" placeholder="Nome Completo">
 <input id="pf_documentNumber" placeholder="CPF">
-<input id="pf_email" placeholder="Email">
-<input id="pf_phoneNumber" placeholder="Telefone">
 <input id="pf_birthDate" placeholder="DD/MM/AAAA">
-<input id="pf_motherName" placeholder="Nome da Mãe">
-
-<select id="pf_profession">
-<option>Autônomo</option><option>CLT</option><option>Servidor Público</option>
-<option>Empresário</option><option>Profissional Liberal</option>
-<option>Motorista de Aplicativo</option><option>Comerciante</option>
-<option>Professor</option><option>Estudante</option>
-<option>Aposentado</option><option>Desempregado</option>
-<option>Outro</option>
-</select>
-
-<select id="pf_assets">
-<option>Até R$50.000</option>
-<option>R$50.001 a R$200.000</option>
-<option>R$200.001 a R$1.000.000</option>
-<option>R$1.000.000 a R$5.000.000</option>
-<option>Acima de R$5.000.000</option>
-</select>
-
 <button onclick="generateTxtPF()">Gerar Cadastro PF</button>
 <textarea id="outputPF" readonly></textarea>
 <button class="copy-btn" onclick="copiarTexto('outputPF')">📋 Copiar Cadastro PF</button>
@@ -151,39 +104,30 @@ async function login(){
  });
  if(error) return alert(error.message);
 
- const { data: profile } = await supabaseClient
-   .from('profiles')
-   .select('role')
-   .eq('id', data.user.id)
-   .single();
-
+ const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', data.user.id).single();
  perfilUsuario = profile;
+
  loginScreen.classList.add("hidden");
  appWrapper.classList.remove("hidden");
 
- if(perfilUsuario.role==='admin'){
-   adminBtn.classList.remove('hidden');
- }
+ if(perfilUsuario.role==='admin') adminBtn.classList.remove('hidden');
 }
 
 function logout(){ supabaseClient.auth.signOut(); location.reload(); }
 
-tabPJ.onclick=()=>{formPJ.classList.remove('hidden');formPF.classList.add('hidden');tabPJ.classList.add('active');tabPF.classList.remove('active');}
-tabPF.onclick=()=>{formPF.classList.remove('hidden');formPJ.classList.add('hidden');tabPF.classList.add('active');tabPJ.classList.remove('active');}
+tabPJ.onclick=()=>{formPJ.classList.remove('hidden');formPF.classList.add('hidden');adminPanel.classList.add('hidden');tabPJ.classList.add('active');tabPF.classList.remove('active');}
+tabPF.onclick=()=>{formPF.classList.remove('hidden');formPJ.classList.add('hidden');adminPanel.classList.add('hidden');tabPF.classList.add('active');tabPJ.classList.remove('active');}
 
-pj_companyType.onchange=()=>pjExtraFields.classList.toggle('hidden',pj_companyType.value==='MEI');
+function abrirAdmin(){
+ adminPanel.classList.remove('hidden');
+ formPJ.classList.add('hidden');
+ formPF.classList.add('hidden');
+}
 
-addOwner.onclick=()=>{
- const div=document.createElement('div');
- div.classList.add('owner-block');
- div.innerHTML=`
- <input class="ownerName" placeholder="Nome Completo">
- <input class="ownerDocument" placeholder="CPF">
- <input class="ownerBirth" placeholder="DD/MM/AAAA">
- <input class="ownerCity" placeholder="Cidade">
- `;
- ownersContainer.appendChild(div);
-};
+function fecharAdmin(){
+ adminPanel.classList.add('hidden');
+ formPJ.classList.remove('hidden');
+}
 
 async function registrarAuditoria(tipo,doc){
  const { data:{user} } = await supabaseClient.auth.getUser();
@@ -192,6 +136,20 @@ async function registrarAuditoria(tipo,doc){
  }
 }
 
+window.generateTxtPJ=async()=>{
+ const conteudo=`PJ: ${pj_businessName.value}\nCNPJ: ${pj_documentNumber.value}`;
+ outputPJ.value=conteudo;
+ outputPJ.select();
+ await registrarAuditoria("Cadastro PJ", pj_documentNumber.value);
+};
+
+window.generateTxtPF=async()=>{
+ const conteudo=`PF: ${pf_fullName.value}\nCPF: ${pf_documentNumber.value}\nNascimento: ${formatarData(pf_birthDate.value)}`;
+ outputPF.value=conteudo;
+ outputPF.select();
+ await registrarAuditoria("Cadastro PF", pf_documentNumber.value);
+};
+
 function copiarTexto(id){
  const campo=document.getElementById(id);
  campo.select();
@@ -199,43 +157,21 @@ function copiarTexto(id){
  alert("Copiado!");
 }
 
-window.generateTxtPJ=async()=>{
- const socios=[...document.querySelectorAll('.owner-block')].map((s,i)=>`
-Sócio ${i+1}: ${s.querySelector('.ownerName').value}
-CPF: ${s.querySelector('.ownerDocument').value}
-Nascimento: ${formatarData(s.querySelector('.ownerBirth').value)}
-Cidade: ${s.querySelector('.ownerCity').value}`).join('\n');
-
- const conteudo=`===== CADASTRO PJ =====
-Razão Social: ${pj_businessName.value}
-Nome Fantasia: ${pj_tradingName.value}
-CNPJ: ${pj_documentNumber.value}
-Email: ${pj_businessEmail.value}
-Telefone: ${pj_contactNumber.value}
-Tipo: ${pj_companyType.value}
-
-${socios}`;
-
- outputPJ.value=conteudo;
- outputPJ.select();
- await registrarAuditoria("Cadastro PJ", pj_documentNumber.value);
-};
-
-window.generateTxtPF=async()=>{
- const conteudo=`===== CADASTRO PF =====
-Nome: ${pf_fullName.value}
-CPF: ${pf_documentNumber.value}
-Nascimento: ${formatarData(pf_birthDate.value)}
-Mãe: ${pf_motherName.value}
-Profissão: ${pf_profession.value}
-Patrimônio: ${pf_assets.value}`;
-
- outputPF.value=conteudo;
- outputPF.select();
- await registrarAuditoria("Cadastro PF", pf_documentNumber.value);
-};
-
-function abrirAdmin(){ alert("Próximo passo: tela de criação de usuários"); }
+async function criarUsuario(){
+ const res = await fetch("https://hrfwoawxiqeyixpgmqwn.supabase.co", {
+   method:"POST",
+   headers:{ "Content-Type":"application/json" },
+   body: JSON.stringify({
+     email:newUserEmail.value,
+     password:newUserPassword.value,
+     nome:newUserName.value,
+     role:newUserRole.value
+   })
+ });
+ const data=await res.json();
+ if(data.error) return alert("Erro: "+data.error.message);
+ alert("Usuário criado com sucesso!");
+}
 </script>
 
 </body>
