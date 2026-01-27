@@ -17,7 +17,6 @@ button { margin-top:15px; background:#d50000; color:#fff; border:none; padding:1
 button:hover { background:#a30000; }
 .owner-block { background:#fff4f4; padding:10px; border-radius:8px; margin-top:10px; }
 .hidden { display:none; }
-pre { background:#f4f4f4; padding:12px; border-radius:8px; white-space:pre-wrap; margin-top:15px; }
 </style>
 </head>
 <body>
@@ -78,7 +77,6 @@ pre { background:#f4f4f4; padding:12px; border-radius:8px; white-space:pre-wrap;
 <label>Estado</label><input id="pj_state">
 
 <button type="button" onclick="generateTxtPJ()">Gerar Cadastro PJ</button>
-<pre id="outputPJ"></pre>
 </form>
 
 <!-- ================= PF ================= -->
@@ -92,17 +90,11 @@ pre { background:#f4f4f4; padding:12px; border-radius:8px; white-space:pre-wrap;
 
 <label>Profissão</label>
 <select id="pf_profession">
-<option>Autônomo</option>
-<option>CLT</option>
-<option>Servidor Público</option>
-<option>Empresário</option>
-<option>Profissional Liberal</option>
-<option>Motorista de Aplicativo</option>
-<option>Comerciante</option>
-<option>Professor</option>
-<option>Estudante</option>
-<option>Aposentado</option>
-<option>Desempregado</option>
+<option>Autônomo</option><option>CLT</option><option>Servidor Público</option>
+<option>Empresário</option><option>Profissional Liberal</option>
+<option>Motorista de Aplicativo</option><option>Comerciante</option>
+<option>Professor</option><option>Estudante</option>
+<option>Aposentado</option><option>Desempregado</option>
 <option>Outro</option>
 </select>
 
@@ -125,8 +117,19 @@ pre { background:#f4f4f4; padding:12px; border-radius:8px; white-space:pre-wrap;
 <label>Estado</label><input id="pf_state">
 
 <button type="button" onclick="generateTxtPF()">Gerar Cadastro PF</button>
-<pre id="outputPF"></pre>
 </form>
+
+<!-- ================= MODAL ================= -->
+<div id="resultModal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:9999;">
+  <div style="background:white; width:90%; max-width:900px; padding:20px; border-radius:10px;">
+    <h3>Cadastro Gerado</h3>
+    <textarea id="modalText" style="width:100%; height:350px; font-family:monospace;"></textarea>
+    <div style="margin-top:10px; text-align:right;">
+      <button onclick="copiarModal()">Copiar</button>
+      <button onclick="fecharModal()">Fechar</button>
+    </div>
+  </div>
+</div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -139,8 +142,6 @@ const pj_companyType = document.getElementById('pj_companyType');
 const pjExtraFields = document.getElementById('pjExtraFields');
 const addOwner = document.getElementById('addOwner');
 const ownersContainer = document.getElementById('ownersContainer');
-const outputPJ = document.getElementById('outputPJ');
-const outputPF = document.getElementById('outputPF');
 
 tabPJ.onclick = () => { tabPJ.classList.add('active'); tabPF.classList.remove('active'); formPJ.style.display='block'; formPF.style.display='none'; }
 tabPF.onclick = () => { tabPF.classList.add('active'); tabPJ.classList.remove('active'); formPF.style.display='block'; formPJ.style.display='none'; }
@@ -170,28 +171,9 @@ addOwner.onclick = () => {
     <input placeholder="Bairro" class="ownerNeighborhood">
     <input placeholder="Cidade" class="ownerCity">
     <input placeholder="Estado" class="ownerState">
-    <button type="button" class="copyAddressBtn">Copiar endereço para empresa</button>
   `;
   ownersContainer.appendChild(div);
-
-  div.querySelector('.copyAddressBtn').addEventListener('click', () => {
-    pj_postalCode.value = div.querySelector('.ownerPostal').value;
-    pj_street.value = div.querySelector('.ownerStreet').value;
-    pj_number.value = div.querySelector('.ownerNumber').value;
-    pj_complement.value = div.querySelector('.ownerComplement').value;
-    pj_neighborhood.value = div.querySelector('.ownerNeighborhood').value;
-    pj_city.value = div.querySelector('.ownerCity').value;
-    pj_state.value = div.querySelector('.ownerState').value;
-  });
 };
-
-function downloadTxt(name, content){
-  const blob = new Blob([content], { type:'text/plain' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = name;
-  link.click();
-}
 
 window.generateTxtPJ = function () {
   const type = pj_companyType.value;
@@ -200,89 +182,40 @@ window.generateTxtPJ = function () {
 
   const owners = [...document.querySelectorAll('.owner-block')].map((div, i) => `
 --- SÓCIO ${i + 1} ---
-Tipo de Sócio: ${div.querySelector('.ownerType').value}
+Tipo: ${div.querySelector('.ownerType').value}
 CPF: ${div.querySelector('.ownerDocument').value}
-Nome Completo: ${div.querySelector('.ownerName').value}
-Telefone: ${div.querySelector('.ownerPhone').value}
-Email: ${div.querySelector('.ownerEmail').value}
-Nome da Mãe: ${div.querySelector('.ownerMother').value}
-Nome Social: ${div.querySelector('.ownerSocial').value}
-Data de Nascimento: ${div.querySelector('.ownerBirth').value}
-
-Endereço do Sócio:
-CEP: ${div.querySelector('.ownerPostal').value}
-Rua: ${div.querySelector('.ownerStreet').value}
-Número: ${div.querySelector('.ownerNumber').value}
-Complemento: ${div.querySelector('.ownerComplement').value}
-Bairro: ${div.querySelector('.ownerNeighborhood').value}
-Cidade: ${div.querySelector('.ownerCity').value}
-Estado: ${div.querySelector('.ownerState').value}
-Pessoa Politicamente Exposta: NÃO
+Nome: ${div.querySelector('.ownerName').value}
 `).join('\n');
 
-  const content = `
-===============================
-   CADASTRO PESSOA JURÍDICA
-===============================
-
-Razão Social: ${pj_businessName.value}
-Nome Fantasia: ${pj_tradingName.value}
-CNPJ: ${pj_documentNumber.value}
-Email Comercial: ${pj_businessEmail.value}
-Telefone de Contato: ${pj_contactNumber.value}
-Tipo de Empresa: ${type}
-
-Faturamento Anual: ${revenue}
-Renda do Sócio: ${income}
-
-ENDEREÇO COMERCIAL
-CEP: ${pj_postalCode.value}
-Rua: ${pj_street.value}
-Número: ${pj_number.value}
-Complemento: ${pj_complement.value}
-Bairro: ${pj_neighborhood.value}
-Cidade: ${pj_city.value}
-Estado: ${pj_state.value}
-
-SÓCIOS
-${owners}
-`;
-
-  outputPJ.textContent = content;
-  const cnpjLimpo = pj_documentNumber.value.replace(/\D/g,'');
-  downloadTxt(cnpjLimpo ? `cadastro_${cnpjLimpo}.txt` : 'cadastro_pj.txt', content);
+  const content = `CADASTRO PJ\nRazão Social: ${pj_businessName.value}\nCNPJ: ${pj_documentNumber.value}\n${owners}`;
+  abrirModal(content);
 };
 
 window.generateTxtPF = function () {
-  const content = `
-===============================
-   CADASTRO PESSOA FÍSICA
-===============================
-
-Nome Completo: ${pf_fullName.value}
-CPF: ${pf_documentNumber.value}
-Email: ${pf_email.value}
-Telefone: ${pf_phoneNumber.value}
-
-Profissão: ${pf_profession.value}
-Patrimônio: ${pf_assets.value}
-
-ENDEREÇO
-CEP: ${pf_postalCode.value}
-Rua: ${pf_street.value}
-Número: ${pf_number.value}
-Complemento: ${pf_complement.value}
-Bairro: ${pf_neighborhood.value}
-Cidade: ${pf_city.value}
-Estado: ${pf_state.value}
-`;
-
-  outputPF.textContent = content;
-  const cpfLimpo = pf_documentNumber.value.replace(/\D/g,'');
-  downloadTxt(cpfLimpo ? `cadastro_${cpfLimpo}.txt` : 'cadastro_pf.txt', content);
+  const content = `CADASTRO PF\nNome: ${pf_fullName.value}\nCPF: ${pf_documentNumber.value}`;
+  abrirModal(content);
 };
 
 });
+
+function abrirModal(texto){
+  const modal = document.getElementById('resultModal');
+  const area = document.getElementById('modalText');
+  area.value = texto;
+  modal.classList.remove('hidden');
+  setTimeout(() => area.select(), 100);
+}
+
+function fecharModal(){
+  document.getElementById('resultModal').classList.add('hidden');
+}
+
+function copiarModal(){
+  const area = document.getElementById('modalText');
+  area.select();
+  document.execCommand('copy');
+  alert('Texto copiado!');
+}
 </script>
 
 </body>
