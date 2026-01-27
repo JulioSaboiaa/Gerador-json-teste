@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gerador de Cadastro</title>
+
 <style>
 body { font-family:'Segoe UI',sans-serif; background:#fff; color:#222; margin:0; }
 header { background:#d50000; color:#fff; padding:1rem; text-align:center; }
@@ -16,7 +17,29 @@ input, select { width:100%; padding:8px; border-radius:5px; border:1px solid #cc
 button { margin-top:15px; background:#d50000; color:#fff; border:none; padding:10px 15px; border-radius:6px; cursor:pointer; }
 button:hover { background:#a30000; }
 .owner-block { background:#fff4f4; padding:10px; border-radius:8px; margin-top:10px; }
-.hidden { display:none; }
+
+/* MODAL */
+#resultModal {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+.modal-box {
+  background:white;
+  width:90%;
+  max-width:900px;
+  padding:20px;
+  border-radius:10px;
+}
+#modalText {
+  width:100%;
+  height:350px;
+  font-family:monospace;
+}
 </style>
 </head>
 <body>
@@ -28,102 +51,27 @@ button:hover { background:#a30000; }
   <div class="tab" id="tabPF">Pessoa Física</div>
 </div>
 
-<!-- ================= PJ ================= -->
+<!-- PJ -->
 <form id="formPJ">
 <h2>Pessoa Jurídica</h2>
-
 <label>Razão Social</label><input id="pj_businessName">
-<label>Nome Fantasia</label><input id="pj_tradingName">
 <label>CNPJ</label><input id="pj_documentNumber">
-<label>Email Comercial</label><input id="pj_businessEmail">
-<label>Telefone</label><input id="pj_contactNumber">
-
-<label>Tipo de Empresa</label>
-<select id="pj_companyType">
-  <option value="MEI">MEI</option>
-  <option value="PJ">PJ</option>
-</select>
-
-<div id="pjExtraFields" class="hidden">
-  <label>Faturamento Anual</label>
-  <select id="pj_revenue">
-    <option>R$81.001 – R$360.000</option>
-    <option>R$360.001 – R$4.800.000</option>
-    <option>R$4.800.001 – R$78.000.000</option>
-    <option>Acima de R$78.000.000</option>
-  </select>
-
-  <label>Renda do Sócio</label>
-  <select id="pj_partnerIncome">
-    <option>Até R$5.000</option>
-    <option>R$5.001 – R$10.000</option>
-    <option>R$10.001 – R$30.000</option>
-    <option>R$30.001 – R$100.000</option>
-    <option>Acima de R$100.000</option>
-  </select>
-</div>
-
-<h3>Sócios</h3>
-<div id="ownersContainer"></div>
-<button type="button" id="addOwner">+ Adicionar Sócio</button>
-
-<h3>Endereço Comercial</h3>
-<label>CEP</label><input id="pj_postalCode">
-<label>Rua</label><input id="pj_street">
-<label>Número</label><input id="pj_number">
-<label>Complemento</label><input id="pj_complement">
-<label>Bairro</label><input id="pj_neighborhood">
-<label>Cidade</label><input id="pj_city">
-<label>Estado</label><input id="pj_state">
-
 <button type="button" onclick="generateTxtPJ()">Gerar Cadastro PJ</button>
 </form>
 
-<!-- ================= PF ================= -->
+<!-- PF -->
 <form id="formPF" style="display:none;">
 <h2>Pessoa Física</h2>
-
 <label>Nome Completo</label><input id="pf_fullName">
 <label>CPF</label><input id="pf_documentNumber">
-<label>Email</label><input id="pf_email">
-<label>Telefone</label><input id="pf_phoneNumber">
-
-<label>Profissão</label>
-<select id="pf_profession">
-<option>Autônomo</option><option>CLT</option><option>Servidor Público</option>
-<option>Empresário</option><option>Profissional Liberal</option>
-<option>Motorista de Aplicativo</option><option>Comerciante</option>
-<option>Professor</option><option>Estudante</option>
-<option>Aposentado</option><option>Desempregado</option>
-<option>Outro</option>
-</select>
-
-<label>Patrimônio</label>
-<select id="pf_assets">
-<option>Até R$50.000</option>
-<option>R$50.001 a R$200.000</option>
-<option>R$200.001 a R$1.000.000</option>
-<option>R$1.000.000 a R$5.000.000</option>
-<option>Acima de R$5.000.000</option>
-</select>
-
-<h3>Endereço</h3>
-<label>CEP</label><input id="pf_postalCode">
-<label>Rua</label><input id="pf_street">
-<label>Número</label><input id="pf_number">
-<label>Complemento</label><input id="pf_complement">
-<label>Bairro</label><input id="pf_neighborhood">
-<label>Cidade</label><input id="pf_city">
-<label>Estado</label><input id="pf_state">
-
 <button type="button" onclick="generateTxtPF()">Gerar Cadastro PF</button>
 </form>
 
-<!-- ================= MODAL ================= -->
-<div id="resultModal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:9999;">
-  <div style="background:white; width:90%; max-width:900px; padding:20px; border-radius:10px;">
+<!-- MODAL -->
+<div id="resultModal">
+  <div class="modal-box">
     <h3>Cadastro Gerado</h3>
-    <textarea id="modalText" style="width:100%; height:350px; font-family:monospace;"></textarea>
+    <textarea id="modalText"></textarea>
     <div style="margin-top:10px; text-align:right;">
       <button onclick="copiarModal()">Copiar</button>
       <button onclick="fecharModal()">Fechar</button>
@@ -132,82 +80,24 @@ button:hover { background:#a30000; }
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-
 const tabPJ = document.getElementById('tabPJ');
 const tabPF = document.getElementById('tabPF');
 const formPJ = document.getElementById('formPJ');
 const formPF = document.getElementById('formPF');
-const pj_companyType = document.getElementById('pj_companyType');
-const pjExtraFields = document.getElementById('pjExtraFields');
-const addOwner = document.getElementById('addOwner');
-const ownersContainer = document.getElementById('ownersContainer');
 
 tabPJ.onclick = () => { tabPJ.classList.add('active'); tabPF.classList.remove('active'); formPJ.style.display='block'; formPF.style.display='none'; }
 tabPF.onclick = () => { tabPF.classList.add('active'); tabPJ.classList.remove('active'); formPF.style.display='block'; formPJ.style.display='none'; }
-
-pj_companyType.addEventListener('change', () => {
-  pjExtraFields.classList.toggle('hidden', pj_companyType.value === 'MEI');
-});
-
-addOwner.onclick = () => {
-  const div = document.createElement('div');
-  div.classList.add('owner-block');
-  div.innerHTML = `
-    <label>Tipo de Sócio</label>
-    <select class="ownerType"><option>SOCIO</option><option>REPRESENTANTE</option></select>
-    <label>CPF</label><input class="ownerDocument">
-    <label>Nome Completo</label><input class="ownerName">
-    <label>Telefone</label><input class="ownerPhone">
-    <label>Email</label><input class="ownerEmail">
-    <label>Nome da Mãe</label><input class="ownerMother">
-    <label>Nome Social</label><input class="ownerSocial">
-    <label>Data de Nascimento</label><input class="ownerBirth">
-    <h4>Endereço do Sócio</h4>
-    <input placeholder="CEP" class="ownerPostal">
-    <input placeholder="Rua" class="ownerStreet">
-    <input placeholder="Número" class="ownerNumber">
-    <input placeholder="Complemento" class="ownerComplement">
-    <input placeholder="Bairro" class="ownerNeighborhood">
-    <input placeholder="Cidade" class="ownerCity">
-    <input placeholder="Estado" class="ownerState">
-  `;
-  ownersContainer.appendChild(div);
-};
-
-window.generateTxtPJ = function () {
-  const type = pj_companyType.value;
-  const revenue = type === 'MEI' ? 'Até R$81.000' : pj_revenue.value;
-  const income = type === 'MEI' ? 'Até R$5.000' : pj_partnerIncome.value;
-
-  const owners = [...document.querySelectorAll('.owner-block')].map((div, i) => `
---- SÓCIO ${i + 1} ---
-Tipo: ${div.querySelector('.ownerType').value}
-CPF: ${div.querySelector('.ownerDocument').value}
-Nome: ${div.querySelector('.ownerName').value}
-`).join('\n');
-
-  const content = `CADASTRO PJ\nRazão Social: ${pj_businessName.value}\nCNPJ: ${pj_documentNumber.value}\n${owners}`;
-  abrirModal(content);
-};
-
-window.generateTxtPF = function () {
-  const content = `CADASTRO PF\nNome: ${pf_fullName.value}\nCPF: ${pf_documentNumber.value}`;
-  abrirModal(content);
-};
-
-});
 
 function abrirModal(texto){
   const modal = document.getElementById('resultModal');
   const area = document.getElementById('modalText');
   area.value = texto;
-  modal.classList.remove('hidden');
-  setTimeout(() => area.select(), 100);
+  modal.style.display = 'flex';
+  setTimeout(() => area.select(), 50);
 }
 
 function fecharModal(){
-  document.getElementById('resultModal').classList.add('hidden');
+  document.getElementById('resultModal').style.display = 'none';
 }
 
 function copiarModal(){
@@ -215,6 +105,16 @@ function copiarModal(){
   area.select();
   document.execCommand('copy');
   alert('Texto copiado!');
+}
+
+function generateTxtPJ(){
+  const texto = `CADASTRO PJ\nRazão Social: ${pj_businessName.value}\nCNPJ: ${pj_documentNumber.value}`;
+  abrirModal(texto);
+}
+
+function generateTxtPF(){
+  const texto = `CADASTRO PF\nNome: ${pf_fullName.value}\nCPF: ${pf_documentNumber.value}`;
+  abrirModal(texto);
 }
 </script>
 
