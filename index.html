@@ -18,48 +18,14 @@ button { margin-top:15px; background:#d50000; color:#fff; border:none; padding:1
 button:hover { background:#a30000; }
 .owner-block { background:#fff4f4; padding:10px; border-radius:8px; margin-top:10px; }
 .hidden { display:none; }
-
-/* BOTÃO REMOVER */
 .remove-owner { background:#666; }
 .remove-owner:hover { background:#444; }
 
-/* ===== MODAL ===== */
-.modal {
-  display:none;
-  position:fixed;
-  z-index:999;
-  left:0; top:0;
-  width:100%; height:100%;
-  background:rgba(0,0,0,0.7);
-  justify-content:center;
-  align-items:center;
-}
-
-.modal-content {
-  background:#fff;
-  width:90%;
-  max-width:800px;
-  border-radius:10px;
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-}
-
-.modal-content textarea {
-  width:100%;
-  height:320px;
-  margin-top:10px;
-  resize:none;
-  font-family:monospace;
-  white-space:pre;
-}
-
-.modal-buttons {
-  display:flex;
-  justify-content:flex-end;
-  gap:10px;
-  margin-top:10px;
-}
+/* MODAL */
+.modal { display:none; position:fixed; z-index:999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; }
+.modal-content { background:#fff; width:90%; max-width:800px; border-radius:10px; padding:20px; display:flex; flex-direction:column; }
+.modal-content textarea { width:100%; height:320px; margin-top:10px; resize:none; font-family:monospace; white-space:pre; }
+.modal-buttons { display:flex; justify-content:flex-end; gap:10px; margin-top:10px; }
 </style>
 </head>
 
@@ -72,6 +38,7 @@ button:hover { background:#a30000; }
   <div class="tab" id="tabPF">Pessoa Física</div>
 </div>
 
+<!-- ================= PJ ================= -->
 <form id="formPJ">
 <h2>Pessoa Jurídica</h2>
 
@@ -122,15 +89,19 @@ button:hover { background:#a30000; }
 <button type="button" onclick="generateTxtPJ()">Gerar Cadastro PJ</button>
 </form>
 
+<!-- ================= PF ================= -->
 <form id="formPF" style="display:none;">
 <h2>Pessoa Física</h2>
+
 <label>Nome Completo</label><input id="pf_fullName">
 <label>CPF</label><input id="pf_documentNumber">
 <label>Email</label><input id="pf_email">
 <label>Telefone</label><input id="pf_phoneNumber">
+
 <button type="button" onclick="generateTxtPF()">Gerar Cadastro PF</button>
 </form>
 
+<!-- MODAL -->
 <div id="resultModal" class="modal">
   <div class="modal-content">
     <h3>Cadastro Gerado</h3>
@@ -173,13 +144,33 @@ addOwner.onclick = () => {
     <label>Nome Completo</label><input class="ownerName">
     <label>Telefone</label><input class="ownerPhone">
     <label>Email</label><input class="ownerEmail">
+    <label>Nome da Mãe</label><input class="ownerMother">
+    <label>Nome Social</label><input class="ownerSocial">
+    <label>Data de Nascimento</label><input class="ownerBirth">
+    <h4>Endereço do Sócio</h4>
+    <input placeholder="CEP" class="ownerPostal">
+    <input placeholder="Rua" class="ownerStreet">
+    <input placeholder="Número" class="ownerNumber">
+    <input placeholder="Complemento" class="ownerComplement">
+    <input placeholder="Bairro" class="ownerNeighborhood">
+    <input placeholder="Cidade" class="ownerCity">
+    <input placeholder="Estado" class="ownerState">
+    <button type="button" class="copyAddressBtn">Copiar endereço para empresa</button>
     <button type="button" class="remove-owner">Remover Sócio</button>
   `;
   ownersContainer.appendChild(div);
 
-  div.querySelector('.remove-owner').addEventListener('click', () => {
-    div.remove();
+  div.querySelector('.copyAddressBtn').addEventListener('click', () => {
+    pj_postalCode.value = div.querySelector('.ownerPostal').value;
+    pj_street.value = div.querySelector('.ownerStreet').value;
+    pj_number.value = div.querySelector('.ownerNumber').value;
+    pj_complement.value = div.querySelector('.ownerComplement').value;
+    pj_neighborhood.value = div.querySelector('.ownerNeighborhood').value;
+    pj_city.value = div.querySelector('.ownerCity').value;
+    pj_state.value = div.querySelector('.ownerState').value;
   });
+
+  div.querySelector('.remove-owner').addEventListener('click', () => div.remove());
 };
 
 window.openModal = text => { modalOutput.value = text; modal.style.display = "flex"; }
@@ -187,20 +178,6 @@ window.closeModal = () => modal.style.display = "none";
 window.copyModalText = () => { modalOutput.select(); document.execCommand("copy"); }
 
 window.generateTxtPJ = function () {
-  const owners = [...document.querySelectorAll('.owner-block')].map((div, i) => `
---- SÓCIO ${i + 1} ---
-Nome: ${div.querySelector('.ownerName').value}
-CPF: ${div.querySelector('.ownerDocument').value}
-Telefone: ${div.querySelector('.ownerPhone').value}
-Email: ${div.querySelector('.ownerEmail').value}
-`).join('\n');
-
-  const content = `CADASTRO PJ\n${owners}`;
-  openModal(content);
-};
-
-window.generateTxtPF = function () {
-  window.generateTxtPJ = function () {
   const type = pj_companyType.value;
   const revenue = type === 'MEI' ? 'Até R$81.000' : pj_revenue.value;
   const income = type === 'MEI' ? 'Até R$5.000' : pj_partnerIncome.value;
@@ -257,7 +234,23 @@ ${owners}
 
   openModal(content);
 };
-  
+
+window.generateTxtPF = function () {
+  const content = `
+===============================
+   CADASTRO PESSOA FÍSICA
+===============================
+
+Nome Completo: ${pf_fullName.value}
+CPF: ${pf_documentNumber.value}
+Email: ${pf_email.value}
+Telefone: ${pf_phoneNumber.value}
+`;
+
+  openModal(content);
+};
+
+});
 </script>
 
 </body>
