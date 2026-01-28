@@ -107,6 +107,15 @@ button:hover { background:#a30000; }
 <option>Aposentado</option><option>Desempregado</option><option>Outro</option>
 </select>
 
+<label>Renda</label>
+<select id="pf_income">
+  <option>Até R$5.000</option>
+  <option>R$5.001 – R$10.000</option>
+  <option>R$10.001 – R$30.000</option>
+  <option>R$30.001 – R$100.000</option>
+  <option>Acima de R$100.000</option>
+</select>
+
 <label>Patrimônio</label>
 <select id="pf_assets">
 <option>Até R$50.000</option>
@@ -154,16 +163,13 @@ const ownersContainer = document.getElementById('ownersContainer');
 const modal = document.getElementById("resultModal");
 const modalOutput = document.getElementById("modalOutput");
 
-/* ABAS */
 tabPJ.onclick = () => { tabPJ.classList.add('active'); tabPF.classList.remove('active'); formPJ.style.display='block'; formPF.style.display='none'; }
 tabPF.onclick = () => { tabPF.classList.add('active'); tabPJ.classList.remove('active'); formPF.style.display='block'; formPJ.style.display='none'; }
 
-/* CAMPOS PJ EXTRAS */
 pj_companyType.addEventListener('change', () => {
   pjExtraFields.classList.toggle('hidden', pj_companyType.value === 'MEI');
 });
 
-/* ADICIONAR SÓCIO */
 addOwner.onclick = () => {
   const div = document.createElement('div');
   div.classList.add('owner-block');
@@ -203,69 +209,10 @@ addOwner.onclick = () => {
   div.querySelector('.remove-owner').addEventListener('click', () => div.remove());
 };
 
-/* MODAL */
 window.openModal = text => { modalOutput.value = text; modal.style.display = "flex"; }
 window.closeModal = () => modal.style.display = "none";
 window.copyModalText = () => { modalOutput.select(); document.execCommand("copy"); }
 
-/* GERAR PJ */
-window.generateTxtPJ = function () {
-  const type = pj_companyType.value;
-  const revenue = type === 'MEI' ? 'Até R$81.000' : pj_revenue.value;
-  const income = type === 'MEI' ? 'Até R$5.000' : pj_partnerIncome.value;
-
-  const owners = [...document.querySelectorAll('.owner-block')].map((div, i) => `
---- SÓCIO ${i + 1} ---
-Tipo de Sócio: ${div.querySelector('.ownerType').value}
-CPF: ${div.querySelector('.ownerDocument').value}
-Nome Completo: ${div.querySelector('.ownerName').value}
-Telefone: ${div.querySelector('.ownerPhone').value}
-Email: ${div.querySelector('.ownerEmail').value}
-Nome da Mãe: ${div.querySelector('.ownerMother').value}
-Nome Social: ${div.querySelector('.ownerSocial').value}
-Data de Nascimento: ${div.querySelector('.ownerBirth').value}
-
-Endereço do Sócio:
-CEP: ${div.querySelector('.ownerPostal').value}
-Rua: ${div.querySelector('.ownerStreet').value}
-Número: ${div.querySelector('.ownerNumber').value}
-Complemento: ${div.querySelector('.ownerComplement').value}
-Bairro: ${div.querySelector('.ownerNeighborhood').value}
-Cidade: ${div.querySelector('.ownerCity').value}
-Estado: ${div.querySelector('.ownerState').value}
-Pessoa Politicamente Exposta: NÃO
-`).join('\n');
-
-  const content = `===============================
-CADASTRO PESSOA JURÍDICA
-===============================
-
-Razão Social: ${pj_businessName.value}
-Nome Fantasia: ${pj_tradingName.value}
-CNPJ: ${pj_documentNumber.value}
-Email Comercial: ${pj_businessEmail.value}
-Telefone de Contato: ${pj_contactNumber.value}
-Tipo de Empresa: ${type}
-
-Faturamento Anual: ${revenue}
-Renda do Sócio: ${income}
-
-ENDEREÇO COMERCIAL
-CEP: ${pj_postalCode.value}
-Rua: ${pj_street.value}
-Número: ${pj_number.value}
-Complemento: ${pj_complement.value}
-Bairro: ${pj_neighborhood.value}
-Cidade: ${pj_city.value}
-Estado: ${pj_state.value}
-
-SÓCIOS
-${owners}`;
-
-  openModal(content);
-};
-
-/* GERAR PF */
 window.generateTxtPF = function () {
   const content = `===============================
 CADASTRO PESSOA FÍSICA
@@ -277,6 +224,7 @@ Email: ${pf_email.value}
 Telefone: ${pf_phoneNumber.value}
 
 Profissão: ${pf_profession.value}
+Renda: ${pf_income.value}
 Patrimônio: ${pf_assets.value}
 
 ENDEREÇO
