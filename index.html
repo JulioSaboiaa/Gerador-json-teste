@@ -98,6 +98,40 @@ button:hover { background:#a30000; }
 <label>Email</label><input id="pf_email">
 <label>Telefone</label><input id="pf_phoneNumber">
 
+<label>Profissão</label>
+<select id="pf_profession">
+<option>Autônomo</option>
+<option>CLT</option>
+<option>Servidor Público</option>
+<option>Empresário</option>
+<option>Profissional Liberal</option>
+<option>Motorista de Aplicativo</option>
+<option>Comerciante</option>
+<option>Professor</option>
+<option>Estudante</option>
+<option>Aposentado</option>
+<option>Desempregado</option>
+<option>Outro</option>
+</select>
+
+<label>Patrimônio</label>
+<select id="pf_assets">
+<option>Até R$50.000</option>
+<option>R$50.001 a R$200.000</option>
+<option>R$200.001 a R$1.000.000</option>
+<option>R$1.000.000 a R$5.000.000</option>
+<option>Acima de R$5.000.000</option>
+</select>
+
+<h3>Endereço</h3>
+<label>CEP</label><input id="pf_postalCode">
+<label>Rua</label><input id="pf_street">
+<label>Número</label><input id="pf_number">
+<label>Complemento</label><input id="pf_complement">
+<label>Bairro</label><input id="pf_neighborhood">
+<label>Cidade</label><input id="pf_city">
+<label>Estado</label><input id="pf_state">
+
 <button type="button" onclick="generateTxtPF()">Gerar Cadastro PF</button>
 </form>
 
@@ -245,12 +279,23 @@ Nome Completo: ${pf_fullName.value}
 CPF: ${pf_documentNumber.value}
 Email: ${pf_email.value}
 Telefone: ${pf_phoneNumber.value}
+
+Profissão: ${pf_profession.value}
+Patrimônio: ${pf_assets.value}
+
+ENDEREÇO
+CEP: ${pf_postalCode.value}
+Rua: ${pf_street.value}
+Número: ${pf_number.value}
+Complemento: ${pf_complement.value}
+Bairro: ${pf_neighborhood.value}
+Cidade: ${pf_city.value}
+Estado: ${pf_state.value}
 `;
 
   openModal(content);
-};
-
 });
+  
 </script>
 
 </body>
