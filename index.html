@@ -200,11 +200,64 @@ Email: ${div.querySelector('.ownerEmail').value}
 };
 
 window.generateTxtPF = function () {
-  const content = `CADASTRO PF\nNome: ${pf_fullName.value}`;
+  window.generateTxtPJ = function () {
+  const type = pj_companyType.value;
+  const revenue = type === 'MEI' ? 'Até R$81.000' : pj_revenue.value;
+  const income = type === 'MEI' ? 'Até R$5.000' : pj_partnerIncome.value;
+
+  const owners = [...document.querySelectorAll('.owner-block')].map((div, i) => `
+--- SÓCIO ${i + 1} ---
+Tipo de Sócio: ${div.querySelector('.ownerType').value}
+CPF: ${div.querySelector('.ownerDocument').value}
+Nome Completo: ${div.querySelector('.ownerName').value}
+Telefone: ${div.querySelector('.ownerPhone').value}
+Email: ${div.querySelector('.ownerEmail').value}
+Nome da Mãe: ${div.querySelector('.ownerMother').value}
+Nome Social: ${div.querySelector('.ownerSocial').value}
+Data de Nascimento: ${div.querySelector('.ownerBirth').value}
+
+Endereço do Sócio:
+CEP: ${div.querySelector('.ownerPostal').value}
+Rua: ${div.querySelector('.ownerStreet').value}
+Número: ${div.querySelector('.ownerNumber').value}
+Complemento: ${div.querySelector('.ownerComplement').value}
+Bairro: ${div.querySelector('.ownerNeighborhood').value}
+Cidade: ${div.querySelector('.ownerCity').value}
+Estado: ${div.querySelector('.ownerState').value}
+Pessoa Politicamente Exposta: NÃO
+`).join('\n');
+
+  const content = `
+===============================
+   CADASTRO PESSOA JURÍDICA
+===============================
+
+Razão Social: ${pj_businessName.value}
+Nome Fantasia: ${pj_tradingName.value}
+CNPJ: ${pj_documentNumber.value}
+Email Comercial: ${pj_businessEmail.value}
+Telefone de Contato: ${pj_contactNumber.value}
+Tipo de Empresa: ${type}
+
+Faturamento Anual: ${revenue}
+Renda do Sócio: ${income}
+
+ENDEREÇO COMERCIAL
+CEP: ${pj_postalCode.value}
+Rua: ${pj_street.value}
+Número: ${pj_number.value}
+Complemento: ${pj_complement.value}
+Bairro: ${pj_neighborhood.value}
+Cidade: ${pj_city.value}
+Estado: ${pj_state.value}
+
+SÓCIOS
+${owners}
+`;
+
   openModal(content);
 };
-
-});
+  
 </script>
 
 </body>
